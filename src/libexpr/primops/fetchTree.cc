@@ -9,6 +9,8 @@
 #include <iomanip>
 #include <regex>
 
+#include <nlohmann/json.hpp>
+
 namespace nix {
 
 void emitTreeAttrs(
@@ -34,8 +36,11 @@ void emitTreeAttrs(
     attrs.alloc("narHash").mkString(narHash->to_string(SRI, true));
 
     if (input.getType() == "git") {
-        auto modules = state.buildBindings(input.modules.size());
-        for (auto &[path, url] : input.modules)
+        auto modulesJson = fetchers::getStrAttr(input.attrs, "modules");
+        auto modulesInfo = fetchers::jsonToAttrs(nlohmann::json::parse(modulesJson));
+
+        auto modules = state.buildBindings(modulesInfo.size());
+        for (auto &[path, url] : modulesInfo)
             modules.alloc(path).mkString(std::get<string>(url));
         attrs.alloc("modules").mkAttrs(modules);
 
