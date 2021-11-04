@@ -21,7 +21,7 @@ void emitTreeAttrs(
 {
     assert(input.isImmutable());
 
-    auto attrs = state.buildBindings(8);
+    auto attrs = state.buildBindings(9);
 
     auto storePath = state.store->printStorePath(tree.storePath);
 
@@ -33,9 +33,15 @@ void emitTreeAttrs(
     assert(narHash);
     attrs.alloc("narHash").mkString(narHash->to_string(SRI, true));
 
-    if (input.getType() == "git")
+    if (input.getType() == "git") {
+        auto modules = state.buildBindings(input.modules.size());
+        for (auto &[path, url] : input.modules)
+            modules.alloc(path).mkString(std::get<string>(url));
+        attrs.alloc("modules").mkAttrs(modules);
+
         attrs.alloc("submodules").mkBool(
             fetchers::maybeGetBoolAttr(input.attrs, "submodules").value_or(false));
+    }
 
     if (!forceDirty) {
 
