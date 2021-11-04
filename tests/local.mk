@@ -48,6 +48,7 @@ nix_tests = \
   flakes.sh \
   flake-local-settings.sh \
   flake-searching.sh \
+  flakes-with-submodules.sh \
   build.sh \
   repl.sh ca/repl.sh \
   ca/build.sh \
